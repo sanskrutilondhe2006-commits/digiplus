@@ -1,4 +1,4 @@
-# digiplus
+# Digiplus
 FastAPI log monitoring &amp; threat detection pipeline featuring custom rule-based anomaly scoring, SQLite/PostgreSQL persistence, and live LLM root-cause diagnostics.
 Technology Stack Overview
 
@@ -12,6 +12,7 @@ Python 3.9+: Core programming language powering the backend services.
 FastAPI: Modern, high-performance web framework for constructing the REST API endpoints (/api/logs).
 Uvicorn: Lightning-fast ASGI web server implementation used to run the FastAPI application.
 Pydantic: Data validation and settings management library used to enforce strict schema validation for incoming log payloads.
+SQLite: Serverless, self-contained relational database engine used for local, low-latency storage of log records (logs.db).
 
  Install Dependencies
 Install the required Python packages:
