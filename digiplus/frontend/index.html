@@ -1,0 +1,363 @@
+<!-- <!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Log Anomaly Dashboard | SentinelLog AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans flex flex-col selection:bg-indigo-500 selection:text-white">
+
+  <!-- Navigation Bar -->
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <div class="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+        <i data-lucide="shield-alert" class="w-6 h-6 text-indigo-400"></i>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold tracking-wide text-white">SentinelLog AI</h1>
+        <p class="text-xs text-slate-400">Autonomous Threat Intelligence</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Pipeline Active
+      </span>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Left Column: Controls & Log Feed -->
+    <div class="lg:col-span-2 flex flex-col gap-6">
+      
+      <!-- Metrics Overview -->
+      <div class="grid grid-cols-3 gap-4">
+        <div class="bg-slate-800/40 border border-slate-800 p-4 rounded-xl backdrop-blur-sm">
+          <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Ingested</p>
+          <p class="text-2xl font-extrabold text-slate-100 mt-1" id="metric-total">1,240</p>
+        </div>
+        <div class="bg-slate-800/40 border border-red-500/20 p-4 rounded-xl backdrop-blur-sm bg-gradient-to-br from-slate-800/40 to-red-950/10">
+          <p class="text-xs font-medium text-red-400 uppercase tracking-wider">Flagged Anomalies</p>
+          <p class="text-2xl font-extrabold text-red-400 mt-1" id="metric-anomalies">8</p>
+        </div>
+        <div class="bg-slate-800/40 border border-slate-800 p-4 rounded-xl backdrop-blur-sm">
+          <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">System Health</p>
+          <p class="text-2xl font-extrabold text-emerald-400 mt-1">98.4%</p>
+        </div>
+      </div>
+
+      <!-- Filters & Search -->
+      <div class="bg-slate-800/40 border border-slate-800 p-4 rounded-xl flex flex-wrap gap-4 items-center justify-between">
+        <div class="relative flex-1 min-w-[240px]">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3 text-slate-500"></i>
+          <input type="text" id="search-input" oninput="handleSearch()" placeholder="Search logs by IP, event, or severity..." class="w-full bg-slate-900 border border-slate-700/80 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+        </div>
+        <button onclick="toggleAnomalyFilter()" id="btn-filter" class="px-4 py-2 text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition flex items-center gap-2">
+          <i data-lucide="filter" class="w-4 h-4"></i> Show Flagged Only
+        </button>
+      </div>
+
+      <!-- Log Data Table -->
+      <div class="bg-slate-800/40 border border-slate-800 rounded-xl overflow-hidden flex-1 shadow-lg">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-950/60 text-slate-400 uppercase text-[11px] tracking-wider border-b border-slate-800">
+              <tr>
+                <th class="p-4">Timestamp</th>
+                <th class="p-4">Severity</th>
+                <th class="p-4">Source</th>
+                <th class="p-4">Event</th>
+                <th class="p-4 text-right">Anomaly Score</th>
+              </tr>
+            </thead>
+            <tbody id="log-table-body" class="divide-y divide-slate-800/60 text-slate-300">
+              <!-- Dynamic Data Injected Here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Detail & AI Explanation Panel -->
+    <div class="bg-slate-800/40 border border-slate-800 rounded-xl p-6 flex flex-col justify-between shadow-lg">
+      <div id="detail-container">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="cpu" class="w-5 h-5 text-indigo-400"></i> AI Diagnostics Panel
+          </h2>
+          <span id="detail-score-badge" class="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+            Select Log
+          </span>
+        </div>
+
+        <div id="detail-content" class="space-y-4">
+          <div class="flex flex-col items-center justify-center py-12 text-center">
+            <div class="p-3 bg-slate-800/50 rounded-full border border-slate-700/50 mb-3 text-slate-400">
+              <i data-lucide="mouse-pointer-click" class="w-6 h-6"></i>
+            </div>
+            <p class="text-slate-400 text-sm">Click on any log entry row to inspect details and view AI root-cause analysis.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-slate-800/80 pt-4 mt-6 text-xs text-slate-500 flex justify-between items-center">
+        <span>Model: SentinelLLM-v3</span>
+        <span class="text-emerald-400 flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Fully Optimized</span>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Complete Frontend Application Script -->
+  <script>
+    // Comprehensive Mock Log Dataset (Normal + Injected Anomalies)
+    const logs = [
+      { id: 1, timestamp: "2026-08-24 10:24:02", severity: "CRITICAL", source: "10.0.0.45", event: "AUTH_FAILURE", score: 0.94, message: "Repeated 401 Unauthorized access on admin route", reason: "High score: Brute force request pattern detected.", ai: "<strong>Root Cause:</strong> Malicious IP attempting credential stuffing against `/api/v1/login`.<br><br><strong>Remediation:</strong> Ban IP 10.0.0.45 and trigger automated password reset for affected user account." },
+      { id: 2, timestamp: "2026-08-24 10:23:45", severity: "INFO", source: "192.168.1.10", event: "HTTP_GET", score: 0.12, message: "GET /api/v1/health status 200", reason: "Standard metric payload.", ai: "No anomalous behavior detected. System operating well within expected baseline parameters." },
+      { id: 3, timestamp: "2026-08-24 10:22:11", severity: "ERROR", source: "db-cluster-01", event: "DB_TIMEOUT", score: 0.88, message: "Connection pool exhausted (max_connections=100)", reason: "Sudden spike in connection duration compared to baseline.", ai: "<strong>Root Cause:</strong> Long-running unindexed SQL query blocking worker threads.<br><br><strong>Remediation:</strong> Terminate stagnant DB process #4481 and scale pool size temporarily." },
+      { id: 4, timestamp: "2026-08-24 10:20:00", severity: "WARN", source: "api-gateway", event: "RATE_LIMIT", score: 0.45, message: "Rate limit threshold reached for client app-99", reason: "Normal spike during peak schedule hours.", ai: "Expected system load behavior. Client app-99 has auto-scaling triggers pending." },
+      { id: 5, timestamp: "2026-08-24 10:15:30", severity: "CRITICAL", source: "203.0.113.42", event: "SQL_INJECTION", score: 0.98, message: "POST /api/search?q=OR 1=1-- detected potential payload attack", reason: "Signature match for malicious SQL injection string.", ai: "<strong>Root Cause:</strong> External user input lacks parameterization, exposing vulnerability.<br><br><strong>Remediation:</strong> Enable WAF block rule and patch query sanitizer." }
+    ];
+
+    let filterAnomalyOnly = false;
+    let searchQuery = "";
+
+    function renderTable() {
+      const tbody = document.getElementById("log-table-body");
+      tbody.innerHTML = "";
+      
+      const filtered = logs.filter(log => {
+        const matchesFilter = filterAnomalyOnly ? log.score >= 0.7 : true;
+        const query = searchQuery.toLowerCase();
+        const matchesSearch = log.source.toLowerCase().includes(query) || 
+                              log.event.toLowerCase().includes(query) || 
+                              log.severity.toLowerCase().includes(query) ||
+                              log.message.toLowerCase().includes(query);
+        return matchesFilter && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500 italic">No matching log entries found.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(log => {
+        const isAnomaly = log.score >= 0.7;
+        const row = document.createElement("tr");
+        row.className = `cursor-pointer hover:bg-slate-800/80 transition ${isAnomaly ? 'bg-red-950/10' : ''}`;
+        row.onclick = () => selectLog(log);
+
+        const sevColors = {
+          CRITICAL: "text-red-400 bg-red-400/10 border-red-500/20",
+          ERROR: "text-orange-400 bg-orange-400/10 border-orange-500/20",
+          WARN: "text-amber-400 bg-amber-400/10 border-amber-500/20",
+          INFO: "text-blue-400 bg-blue-400/10 border-blue-500/20"
+        };
+
+        row.innerHTML = `
+          <td class="p-4 font-mono text-xs text-slate-400">${log.timestamp}</td>
+          <td class="p-4"><span class="px-2.5 py-0.5 rounded text-[11px] font-semibold border ${sevColors[log.severity] || 'text-slate-400'}">${log.severity}</span></td>
+          <td class="p-4 font-mono text-xs">${log.source}</td>
+          <td class="p-4 font-medium">${log.event}</td>
+          <td class="p-4 text-right font-bold font-mono ${isAnomaly ? 'text-red-400' : 'text-slate-400'}">${log.score}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function selectLog(log) {
+      const badge = document.getElementById("detail-score-badge");
+      const content = document.getElementById("detail-content");
+      const isAnomaly = log.score >= 0.7;
+
+      badge.innerText = `Score: ${log.score}`;
+      badge.className = `px-2.5 py-1 text-xs font-bold rounded-full ${isAnomaly ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}`;
+
+      content.innerHTML = `
+        <div class="space-y-4">
+          <div>
+            <span class="text-xs text-slate-400 block mb-1">Raw Event Message</span>
+            <p class="font-mono text-xs bg-slate-950 p-3 rounded-lg border border-slate-800 text-slate-200">${log.message}</p>
+          </div>
+          <div>
+            <span class="text-xs text-slate-400 block mb-1">Detection Trigger</span>
+            <p class="text-sm text-slate-300">${log.reason}</p>
+          </div>
+          <div class="pt-2 border-t border-slate-800">
+            <span class="text-xs font-semibold text-indigo-400 block mb-2 flex items-center gap-1.5">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> AI Root Cause & Next Steps
+            </span>
+            <div class="text-sm text-slate-300 bg-indigo-950/20 border border-indigo-900/40 p-3.5 rounded-lg leading-relaxed">
+              ${log.ai}
+            </div>
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    function toggleAnomalyFilter() {
+      filterAnomalyOnly = !filterAnomalyOnly;
+      const btn = document.getElementById("btn-filter");
+      if (filterAnomalyOnly) {
+        btn.classList.add("bg-red-500/30", "border-red-500/40");
+      } else {
+        btn.classList.remove("bg-red-500/30", "border-red-500/40");
+      }
+      renderTable();
+    }
+
+    function handleSearch() {
+      searchQuery = document.getElementById("search-input").value;
+      renderTable();
+    }
+
+    // Initialize the UI upon loading
+    document.addEventListener("DOMContentLoaded", () => {
+      renderTable();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelLog AI Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans flex flex-col">
+
+  <!-- HEADER WITH "ADD NEW LOG" BUTTON -->
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40 px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <div class="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+        <i data-lucide="shield-alert" class="w-6 h-6 text-indigo-400"></i>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold text-white">SentinelLog AI</h1>
+        <p class="text-xs text-slate-400">Threat Intelligence Dashboard</p>
+      </div>
+    </div>
+    
+    <button onclick="openModal()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-2 shadow-lg hover:shadow-indigo-500/20">
+      <i data-lucide="plus" class="w-4 h-4"></i> Ingest New Log
+    </button>
+  </header>
+
+  <!-- MAIN DASHBOARD CONTENT (TABLE + AI SIDEBAR) -->
+  <div class="flex-1 flex overflow-hidden">
+    <!-- LOG TABLE SECTION -->
+    <main class="flex-1 p-6 overflow-y-auto border-r border-slate-800">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-sm font-bold text-slate-300">Ingested System Logs</h2>
+        <button onclick="fetchLogs()" class="px-3 py-1.5 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1.5 transition">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
+        </button>
+      </div>
+
+      <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/40">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-slate-800 bg-slate-950 text-slate-400 text-xs font-semibold">
+              <th class="p-4">Timestamp</th>
+              <th class="p-4">Severity</th>
+              <th class="p-4">Source</th>
+              <th class="p-4">Event</th>
+              <th class="p-4 text-right">Anomaly Score</th>
+            </tr>
+          </thead>
+          <tbody id="log-table-body" class="divide-y divide-slate-800/50 text-xs">
+            <tr>
+              <td colspan="5" class="p-8 text-center text-slate-500">Loading logs...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- AI DIAGNOSTICS DISPLAY SIDEBAR -->
+    <aside class="w-96 p-6 bg-slate-950/50 overflow-y-auto flex flex-col">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i> AI Diagnostics
+        </h3>
+        <span id="detail-score-badge" class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-800 text-slate-400">
+          No Log Selected
+        </span>
+      </div>
+
+      <div id="detail-content" class="space-y-4 text-slate-400 text-xs">
+        <p class="text-slate-500 italic">Click any row in the table or ingest a new log to inspect AI root-cause analysis.</p>
+      </div>
+    </aside>
+  </div>
+
+  <!-- INGEST LOG MODAL -->
+  <div id="add-log-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-md w-full p-6 shadow-2xl relative">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i data-lucide="file-plus" class="w-4 h-4 text-indigo-400"></i> Ingest New Log Entry
+        </h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white transition">&times;</button>
+      </div>
+      
+      <form id="add-log-form" onsubmit="submitLog(event)" class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Source IP / Host</label>
+            <input type="text" id="log-source" required placeholder="192.168.1.100" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Severity</label>
+            <select id="log-severity" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+              <option value="INFO">INFO</option>
+              <option value="WARN">WARN</option>
+              <option value="ERROR">ERROR</option>
+              <option value="CRITICAL">CRITICAL</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Event Type</label>
+            <input type="text" id="log-event" required placeholder="UNAUTHORIZED_ACCESS" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Anomaly Score (0.00-1.00)</label>
+            <input type="number" step="0.01" min="0" max="1" id="log-score" required placeholder="0.85" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Raw Message</label>
+          <textarea id="log-message" required rows="2" placeholder="403 Forbidden on /admin route" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Detection Reason</label>
+          <input type="text" id="log-reason" required placeholder="Pattern match for brute force" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition">Cancel</button>
+          <button type="submit" id="btn-submit" class="px-4 py-2 text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition flex items-center gap-1.5">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Submit & Analyze
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- LINK EXTERNAL JAVASCRIPT FILE HERE -->
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>
